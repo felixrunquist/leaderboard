@@ -1,28 +1,34 @@
 $monospace: "Fira Mono", "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", Monaco, "Lucida Console", monospace;
 
 @mixin bp($point) {
-   @if $point == sm {
-     @media (min-width: 640px) { @content ; }
+  @if $point == sm {
+    @media (min-width: 640px) { @content ; }
   }
-	@else if $point == sm-u {
-		@media (max-width: 640px) { @content ; }
- }
-   @else if $point == md {
-     @media (min-width: 768px) { @content ; }
+  @else if $point == sm-u {
+    @media (max-width: 639px) { @content ; }
   }
-	@else if $point == md-u {
-		@media (max-width: 768px) { @content ; }
- }
-	@else if $point == lg {
-		@media (min-width: 1024px) { @content ; }
- }
- @else if $point == lg-u {
-	 @media (max-width: 1024px) { @content ; }
-}
-    @else if $point == xl {
-     @media (min-width: 1280px) { @content ; }
+  @else if $point == md {
+    @media (min-width: 768px) { @content ; }
   }
-	@else if $point == xl-u {
-		@media (max-width: 1280px) { @content ; }
- }
+  @else if $point == md-u {
+    @media (max-width: 767px) { @content ; }
+  }
+  @else if $point == lg {
+    @media (min-width: 1024px) { @content ; }
+  }
+  @else if $point == lg-u {
+    @media (max-width: 1023px) { @content ; }
+  }
+  @else if $point == xl {
+    @media (min-width: 1280px) { @content ; }
+  }
+  @else if $point == xl-u {
+    @media (max-width: 1279px) { @content ; }
+  }
+  @else if $point == xxl {
+    @media (min-width: 1536px) { @content ; }
+  }
+  @else if $point == xxl-u {
+    @media (max-width: 1535px) { @content ; }
+  }
 }

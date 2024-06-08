@@ -1,13 +1,7 @@
 const fs = require('fs')
 const { program } = require('commander');
-//Create new component in /components with name provided by ...
-// print process.argv
-// process.argv.forEach(function (val, index, array) {
-//   console.log(index + ': ' + val);
-// });
 
-// console.info
-const VERSION = 0.1
+const VERSION = 0.2
 
 var config = {dir: 'components/'}
 
@@ -30,27 +24,31 @@ program
   )
   .parse(process.argv);
 
-var {dir, foldername} = program.opts();
-// console.log(program.opts())
-// console.log(dir)
-// console.log(foldername)
-const [componentName] = program.args;
+var {dir, folderName} = program.opts();
+var [componentName] = program.args;
 if(typeof dir != 'undefined'){
   config.dir = dir
 }
-if(typeof foldername == 'undefined'){
-  foldername = componentName
+if(typeof folderName == 'undefined'){
+  folderName = componentName
 }
 
-console.info('Component creator V' + VERSION)
+
+folderName = folderName.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);//dash case
+if(folderName[0] == '-'){
+  folderName = folderName.substring(1);
+}
+componentName = componentName.replace(/([-_][a-z,A-Z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''));//camel case
+componentName = componentName.charAt(0).toUpperCase() + componentName.slice(1)
+const path = process.env.PWD + '/' + config.dir + folderName + '/'
+
+console.info('Component creator V ' + VERSION)
 console.info('Component name: ' + componentName)
-const path = process.env.PWD + '/' + config.dir + foldername + '/'
-console.info('Creating boilerplate component at ' + path)
+console.info('Creating boilerplate component at ' + path);
 
 fs.mkdirSync(path)
-fs.writeFileSync(path + 'index.js', `export { default } from './${foldername}';`)
-fs.writeFileSync(path + foldername + '.js', `
-import styles from './${foldername}.module.scss';
+fs.writeFileSync(path + 'index.js', `export { default } from './${folderName}';`)
+fs.writeFileSync(path + folderName + '.js', `import styles from './${folderName}.module.scss';
 import { useEffect, useState, useRef } from 'react'
 
 export default function ${componentName}(props){
@@ -61,6 +59,6 @@ export default function ${componentName}(props){
 }
 `)
 
-fs.writeFileSync(path + foldername + '.module.scss', '')
-
+fs.writeFileSync(path + folderName + '.module.scss', '')
+console.info("Done. ")
 // console.log(process.env.PWD)
