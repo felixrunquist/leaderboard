@@ -8,7 +8,7 @@ The project is managed by default using the Yarn package manager. I usually have
 - [Sass](https://sass-lang.com/) support in global and modular stylesheets.
 - Custom file paths, such as `@/l/` which maps to `/lib` (This can be modified in `jsconfig.json`)
 - A component creator, which will create a folder with the component name as well as a stylesheet. To create a new component, run `node new-component.js [component name]`.
-- Custom media queries. In the `globals.scss` are defined custom includes for different breakpoints. This is great for building responsive layout as it makes breakpoints easier to use in modules, you can use them like so:
+- Custom media queries. In the `globals.scss` are defined custom includes for different breakpoints. This is great for building responsive layouts as it makes breakpoints easier to use in modules, you can use them like so:
 ```
 @import 'styles/constants.scss';
 
@@ -62,4 +62,6 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 ## Deploy on Vercel
 
-The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js.
+The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js. This project also comes with built-in docker support, with all you need to deploy and run your project in a self-supported container.
+To build the image, run the command `make build`.
+You can then run it with the command `make start`. It will be available at [http://localhost:3000](http://localhost:3000).

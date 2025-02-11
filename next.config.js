@@ -30,10 +30,14 @@ const nextConfig = {
   //   locales: ["en"],
   //   defaultLocale: "en",
   // },
-  experimental: {
+  
+}
+
+if(process.env.STANDALONE){
+  nextConfig.experimental = {
     esmExternals: 'loose'
-  },
-  output: 'standalone',
+  };
+  nextConfig.output = standalone;
 }
 
 module.exports = composePlugins([withBundleAnalyzer], nextConfig);

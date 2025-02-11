@@ -1,0 +1,21 @@
+name: build
+
+services:
+  build:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.build
+      network: host
+      no_cache: true
+    image: build
+    restart: always
+    # network_mode: host
+    ports:
+      - "3000:3000"
+    # volumes: 
+    #   - type: bind
+    #     source: ./data
+    #     target: /data
+    
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"

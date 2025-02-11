@@ -1,7 +1,11 @@
 .PHONY: build
 build:
-	docker build -t nextjs-docker .
+	DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker/docker-compose.yml build --no-cache
 
-.PHONY: run
-run:
-	docker run -p 3000:3000 nextjs-docker
+.PHONY: start
+start:
+	docker compose -f docker/docker-compose.yml up -d
+
+.PHONY: stop
+stop:
+	docker compose -f docker/docker-compose.yml down
