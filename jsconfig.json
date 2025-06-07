@@ -1,9 +1,9 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/c/*": ["components/*"],
-      "@/l/*": ["lib/*"]
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/c/*": ["components/*"],
+            "@/l/*": ["lib/*"]
+        }
     }
-  }
 }
