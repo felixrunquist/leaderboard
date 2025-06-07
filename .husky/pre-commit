@@ -1,1 +1,5 @@
-npx prettier --write '**/*.{js,json}'
+#!/bin/bash
+
+# npx prettier --write '**/*.{js,json}'
+npx lint-staged
+# git add "**/*.{js,json}"
