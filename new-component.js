@@ -61,10 +61,10 @@ fs.writeFileSync(
 import { useEffect, useState, useRef } from 'react'
 
 export default function ${componentName}(props){
-  return (
-    <>
-    </>
-  )
+    return (
+      <>
+      </>
+    )
 }
 `,
 );
