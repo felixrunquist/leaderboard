@@ -4,7 +4,6 @@
 import fs from 'fs'
 import { dirname } from 'path'
 
-
 //Remove existing node_modules
 fs.rmSync('./.next/standalone/node_modules', { recursive: true, force: true })
 fs.mkdirSync('./.next/standalone/node_modules')

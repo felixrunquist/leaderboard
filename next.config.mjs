@@ -28,9 +28,6 @@ const nextConfig = {
   images: {
     domains: [
     ]
-  },
-  webpack: (config) => {
-    return config;
   }
 }
 

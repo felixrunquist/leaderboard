@@ -4,8 +4,8 @@
     "private": true,
     "scripts": {
         "prepare": "husky install",
-        "dev": "next dev",
-        "build": "next build",
+        "dev": "next dev --turbopack",
+        "build": "next build --turbopack",
         "start": "next start",
         "lint": "next lint",
         "docker-build": "DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker/docker-compose.yml build --no-cache",
@@ -14,7 +14,7 @@
     },
     "dependencies": {
         "@next/bundle-analyzer": "^14.2.3",
-        "next": "^15.1.7",
+        "next": "^15.3.3",
         "path": "^0.12.7",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"
