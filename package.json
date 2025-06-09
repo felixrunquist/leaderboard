@@ -5,7 +5,7 @@
     "scripts": {
         "prepare": "husky install",
         "dev": "next dev --turbopack",
-        "build": "next build --turbopack",
+        "build": "next build",
         "start": "next start",
         "lint": "next lint",
         "docker-build": "DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker/docker-compose.yml build --no-cache",

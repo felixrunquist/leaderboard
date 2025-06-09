@@ -22,7 +22,7 @@ json.files.forEach(f => {
             return;
         }
     }
-    console.log(f)
+    // console.log(f)
     const ext = f.replace('../node_modules/', '')
     const dest = './.next/standalone/node_modules/' + ext
 

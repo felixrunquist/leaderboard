@@ -32,7 +32,6 @@ const nextConfig = {
 }
 
 if(process.env.STANDALONE){
-  nextConfig.turbo = true;
   nextConfig.output = 'standalone';
 }
 
