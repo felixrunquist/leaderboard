@@ -1,0 +1,11 @@
+.widgetContainer {background-color: transparent; padding: 0; display: flex; justify-content: center; }
+
+.widget {flex: 1 1 0px; aspect-ratio: 1; border-radius: .5rem; padding: .5rem; background: white; max-width: 15rem; overflow: hidden;
+    background: radial-gradient(circle at 10% 20%, hsl(237, 50%,40%), hsl(237, 60%, 30%)); 
+    color: rgba(255,255,255, 0.7);
+    .info {color: white; }
+
+    h3 {font-size: min(1.8rem, 2.5vw); text-align: left; }
+}
+.widget:not(:first-child) {margin-left: .5rem; }
+.widget:not(:last-child) {margin-right: .5rem; }

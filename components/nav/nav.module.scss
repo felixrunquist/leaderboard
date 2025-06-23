@@ -1,0 +1,28 @@
+.nav {display: flex; align-items: center; padding: 0 1rem; 
+    a {display: flex; flex-direction: column; align-items: center; margin-right: .5rem; position: relative;
+        svg {padding: .5rem; box-sizing: content-box; font-size: 1.5rem; border-radius: .25rem; background: transparent; transition: background .2s ease-in-out; }
+        p {font-size: .8rem; margin: 0; min-height: .8rem; opacity: 0; transition: opacity .2s ease-in-out; position: absolute; bottom: -1rem; }
+    }
+    a:not(:first-child) {margin-left: .25rem;}
+    a:not(:last-child) {margin-right: .25rem; }
+
+    a:hover svg {background: rgba(0,0,0,0.3); }
+    a:hover svg:is(.nav.light *) {background: rgba(255,255,255,0.3); }
+
+    a.active svg {background: rgba(0,0,0,0.2); }
+    a.active  svg:is(.nav.light *) {background: rgba(255,255,255,0.3); }
+}
+.nav.padBottom, .nav.showText {padding-bottom: 1rem; }
+
+.nav.spaced {
+    a:not(:first-child) {margin-left: .75rem;}
+    a:not(:last-child) {margin-right: .75rem; }
+}
+
+.nav:hover a p, .nav.showText a p {opacity: 1; }
+
+.headerLink {position: relative; 
+    badge {position: absolute; right: 0; bottom: 0; }
+}
+
+.headerLink:not([href]):not([onclick]) {opacity: 0.5; }
