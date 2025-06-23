@@ -30,3 +30,37 @@ h1,h2,h3, p {margin-top: 0; }
 
 .container {padding: 0 1rem; }
 section {border-radius: .5rem; padding: .5rem; background: rgba(255,255,255,0.2); margin-bottom: 1rem; }
+
+
+button, input, .button, select {
+    display: block; 
+    border-radius: .5rem;
+    border: 1px solid transparent;
+    padding: 0.3rem .6rem;
+    margin: .5rem; 
+    // height: 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: rgba(255, 255, 255, 0.3);
+    transition: border-color 0.25s, background-color 0.25s;
+    margin: 0; 
+}
+input[type="file"] {padding: .25rem; }
+
+button:hover, .button:hover,
+input:hover,
+input:focus {
+    outline: none;
+    border-color: #646cff;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+button, .button {cursor: pointer; }
+
+// input[type="text"], input[type="password"] {border-radius: .5rem; padding: .25rem; border: none; font-size: 1rem; background: rgba(0,0,0,0.3); }
+input[type="text"]::placeholder, input[type="password"]::placeholder {color: inherit; opacity: 0.7; }
+
+.ok {color: green; }
+.warning {color: yellow; }
+.error {color: red; }

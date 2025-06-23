@@ -1,0 +1,16 @@
+.container {
+    background: white; margin: auto; min-width: 30vw; padding: 1rem; border-radius: 1rem; 
+    align-self: center; color: black;
+
+    form {
+        display: flex; flex-direction: column; justify-content: stretch;
+        > * {margin: 0 0 1rem 0; }
+    }
+
+    button, input {background-color: rgba(0,0,0,0.3);}
+    button:hover, .button:hover,
+    input:hover,
+    input:focus {background-color: rgba(0,0,0,0.6);}
+}
+
+.main {width:100%; min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column;}

@@ -1,9 +1,7 @@
 import bcrypt from 'bcryptjs'
 
 export default function users(sequelize, DataTypes) {
-    const users = sequelize.define(
-        'users',
-        {
+    const users = sequelize.define('users', {
             name: DataTypes.STRING,
             username: {
                 type: DataTypes.STRING,
