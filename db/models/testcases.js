@@ -1,5 +1,3 @@
-import bcrypt from 'bcryptjs'
-
 export default function testcases(sequelize, DataTypes) {
     const testcases = sequelize.define('testcases',{
         id: {
@@ -28,7 +26,6 @@ export default function testcases(sequelize, DataTypes) {
     });
     testcases.associate = function (models) {
         testcases.belongsToMany(models.suites, {through: 'Testcases_Suites', foreignKey: 'testCaseId'})
-        models.suites.belongsToMany(testcases, {through: 'Testcases_Suites', foreignKey: 'suiteId'})
     };
     return testcases;
 };

@@ -1,5 +1,3 @@
-import bcrypt from 'bcryptjs'
-
 export default function sessions(sequelize, DataTypes) {
     const sessions = sequelize.define('sessions', {
         id: {
@@ -37,13 +35,18 @@ export default function sessions(sequelize, DataTypes) {
         // associations can be defined here
         sessions.belongsTo(models.suites, {
             foreignKey: 'suiteId',
-            as: 'suites',
+            as: 'suite',
         });
 
         sessions.belongsTo(models.users, {
             foreignKey: 'user',
             targetKey: 'username', // 👈 important: points to a non-primary column
             as: 'userDetails',
+        });
+
+        sessions.hasMany(models.scores, {
+            foreignKey: 'sessionId',
+            as: 'scores',
         });
     };
     return sessions;

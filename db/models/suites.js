@@ -1,7 +1,5 @@
-import bcrypt from 'bcryptjs'
-
 export default function suites(sequelize, DataTypes) {
-    const testcases = sequelize.define('suites',{
+    const suites = sequelize.define('suites',{
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -23,5 +21,8 @@ export default function suites(sequelize, DataTypes) {
             defaultValue: DataTypes.NOW,
         },
     });
-    return testcases;
+    suites.associate = function (models) {
+        suites.belongsToMany(models.testcases, {through: 'Testcases_Suites', foreignKey: 'suiteId'})
+    };
+    return suites;
 };

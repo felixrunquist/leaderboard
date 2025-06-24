@@ -23,6 +23,9 @@ const sequelize = new Sequelize(config);
 const modelsDir = path.join(__dirname);
 
 async function initializeDb() {
+    if(globalThis.__cached_db){
+        return globalThis.__cached_db;
+    }
     const files = fs.readdirSync(modelsDir)
         .filter(file => {
             return (
@@ -32,9 +35,7 @@ async function initializeDb() {
             );
         });
     for (const file of files) {
-        console.log(file)
         const model = (await import('./' + file)).default;
-        console.log(model)
         const defined = model(sequelize, DataTypes);
         db[defined.name] = defined;
     }
@@ -47,6 +48,8 @@ async function initializeDb() {
 
     db.sequelize = sequelize;
     db.Sequelize = Sequelize;
+
+    globalThis.__cached_db = db;
     return db;
 }
 

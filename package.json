@@ -25,7 +25,9 @@
         "react-dom": "^19.0.0",
         "react-icons": "^5.5.0",
         "sequelize": "^6.37.7",
-        "sqlite3": "^5.1.7"
+        "sqlite3": "^5.1.7",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-react": "^5.25.2"
     },
     "devDependencies": {
         "commander": "^12.1.0",

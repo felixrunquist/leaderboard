@@ -1,5 +1,3 @@
-import bcrypt from 'bcryptjs'
-
 export default function scores(sequelize, DataTypes) {
     const scores = sequelize.define('scores',{
         sessionId: {
