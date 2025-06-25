@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from './lib/edge-auth'
 
 export const config = {
-    matcher: ['/auth/:path*', '/api/auth/:path', '/', '/api/leaderboard/:path*'],
+    matcher: ['/auth/:path*', '/api/auth/:path', '/', '/api/leaderboard/:path*', '/api/users'],
 }
 
 export async function middleware(req) {

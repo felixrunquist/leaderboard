@@ -12,6 +12,11 @@ export default function users(sequelize, DataTypes) {
                 type: DataTypes.STRING,
                 unique: true,
             },
+            admin: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
         },
         {
             hooks: {
@@ -24,8 +29,7 @@ export default function users(sequelize, DataTypes) {
     );
     users.associate = function (models) {
         // associations can be defined here
-        // users.hasMany(models.posts, { as: 'posts' });
-        // users.hasMany(models.jobs, { as: 'jobs' });
+        users.belongsToMany(models.suites, {through: 'Users_Suites', foreignKey: 'userId'})
     };
     return users;
 };

@@ -23,7 +23,8 @@ import initializeDb from './models/index.js';
         name: 'Admin',
         username: 'admin',
         password: 'test123',
-        email: 'admin@wearebasis.com'
+        email: 'admin@wearebasis.com',
+        admin: 1
     });
 
     //Create test data

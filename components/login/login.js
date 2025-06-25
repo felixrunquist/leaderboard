@@ -21,7 +21,7 @@ export default function Login() {
 
     useEffect(() => {
         async function verifyAuth() {
-            const res = await fetch('/api/verify-auth');
+            const res = await fetch('/api/users/check-auth');
             if (res.status == 200) {
                 redirect();
             }
@@ -39,7 +39,7 @@ export default function Login() {
 
         console.log("Logging in");
 
-        const res = await fetch('/api/auth', {
+        const res = await fetch('/api/users/auth', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

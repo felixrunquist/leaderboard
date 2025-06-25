@@ -23,6 +23,7 @@ export default function suites(sequelize, DataTypes) {
     });
     suites.associate = function (models) {
         suites.belongsToMany(models.testcases, {through: 'Testcases_Suites', foreignKey: 'suiteId'})
+        suites.belongsToMany(models.users, {through: 'Users_Suites', foreignKey: 'suiteId'})
     };
     return suites;
 };
