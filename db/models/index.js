@@ -40,7 +40,7 @@ async function initializeDb() {
         const defined = model(sequelize, DataTypes);
         db[defined.name] = defined;
     }
-    console.log(sequelize)
+
     // if (!globalThis.__models_associated__) {
         Object.keys(db).forEach(modelName => {
             if (typeof db[modelName].associate === 'function') {

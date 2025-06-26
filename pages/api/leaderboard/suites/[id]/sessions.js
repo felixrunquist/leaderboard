@@ -47,6 +47,8 @@ const handler = createHandler();
  *                         type: integer
  *                       username:
  *                         type: string
+ *                       name:
+ *                         type: string
  *                       date:
  *                         type: string
  *                         format: date-time
@@ -91,6 +93,10 @@ const handler = createHandler();
 //Get sessions of a particular suite
 handler.get(async (req, res) => {
     const suiteId = req.query.id
+    let orderBy = 'score'; 
+    if(req.query.order == 'date'){
+        orderBy = 'date';
+    }
 
     const models = await initializeDb();
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
@@ -104,9 +110,9 @@ handler.get(async (req, res) => {
 
         let sessionList = await models.sessions.findAll({
             where: { suiteId },
-            order: [['date', 'DESC']],
+            order: [[orderBy == 'date' ? 'date' : 'totalScore', 'DESC']],
             limit,
-            attributes: ['commitId', 'suiteId', 'date', 'id', 'username', 'totalScore'],
+            attributes: ['name', 'commitId', 'suiteId', 'date', 'id', 'username', 'totalScore'],
             include: [
                 {
                     model: models.suites,

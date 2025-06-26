@@ -1,5 +1,5 @@
-const fs = require("fs");
-const {program} = require("commander");
+import fs from "fs";
+import { program } from "commander";
 
 const VERSION = 0.2;
 

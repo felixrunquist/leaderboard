@@ -26,7 +26,7 @@ export default function LastSessions() {
             <div className={styles.sessions}>
                 {sessions.map((i,k) => <a key={k}>
                     <h3>{i.suite.name} →</h3>
-                    <p>{fromNow(i.date)} - Score: {Math.round(i.score * 100) / 100}</p>
+                    <p style={{textTransform: ''}}>{fromNow(i.date)} - Score: {Math.round(i.score * 100) / 100}</p>
                 </a>)}
 
             </div>

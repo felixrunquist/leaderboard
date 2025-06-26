@@ -1,0 +1,9 @@
+@use "sass:color";
+
+.container {flex: 1; 
+    *[class*="ag-cell "] {padding-left: .5rem; padding-right: .5rem; display: flex; align-items: center;}
+    *[class*="ag-header-cell "] {padding-left: .5rem; padding-right: .5rem;}
+
+    a {color: #646cff; transition: color .2s ease-in-out}
+    a:hover {color: color.adjust(#646cff, $lightness: -10%); }
+}

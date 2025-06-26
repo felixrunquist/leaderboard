@@ -34,6 +34,8 @@ const handler = createHandler();
  *                     properties:
  *                       id:
  *                         type: integer
+ *                       name:
+ *                         type: string
  *                       username:
  *                         type: string
  *                       date:
@@ -79,7 +81,7 @@ handler.get(async (req, res) => {
         let sessionList = await models.sessions.findAll({
             order: [['date', 'DESC']],
             limit,
-            attributes: ['commitId', 'date', 'id', 'suiteId', 'username'],
+            attributes: ['name', 'commitId', 'date', 'id', 'suiteId', 'username'],
             include: [
                 {
                     model: models.suites,

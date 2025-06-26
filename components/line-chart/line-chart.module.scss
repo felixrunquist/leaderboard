@@ -1,0 +1,14 @@
+.chart {width: calc(100% - 2rem); height: 2px; border-radius: 9999px; background: white; margin: 2rem 1rem; 
+    position: relative;
+}
+
+.toolbar {display: flex; }
+
+.point, .tick {position: absolute; top: 0; transform: translateY(-50%);}
+.point {z-index: 2; width: .8rem; height: .8rem; background: rgba(255,255,255,0.8); border-radius: 9999px; border: 1px solid #ccc; }
+.tick {z-index: 1; width: 2px; height: 1.5rem; transform: translateX(-50%) translateY(-50%); background: white; }
+.tick::after {
+    content: var(--var-label); position: absolute; display: block; left: calc(50%); bottom: 0; 
+    transform: translateX(-50%) translateY(100%); 
+}
+

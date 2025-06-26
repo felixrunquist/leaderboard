@@ -28,7 +28,7 @@ a {
 h1,h2,h3 {text-align: center;}
 h1,h2,h3, p {margin-top: 0; }
 
-.container {padding: 0 1rem; }
+.container {padding: 0 1rem; min-height: calc(100vh - 7rem); display: flex; flex-direction: column; }
 section {border-radius: .5rem; padding: .5rem; background: rgba(255,255,255,0.2); margin-bottom: 1rem; }
 
 

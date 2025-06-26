@@ -96,7 +96,7 @@ handler.get(async (req, res) => {
 
         const suite = await models.suites.findOne({
             where: { id },
-            attributes: ['id', 'name', 'rankAlgorithm', 'date'],
+            attributes: ['id', 'name', 'rankAlgorithm', 'created', 'updated'],
             include: [
                 {
                     model: models.testcases,

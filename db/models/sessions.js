@@ -5,6 +5,10 @@ export default function sessions(sequelize, DataTypes) {
             autoIncrement: true,
             primaryKey: true,
         },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
         suiteId: {
             type: DataTypes.INTEGER,
             references: {
@@ -52,6 +56,18 @@ export default function sessions(sequelize, DataTypes) {
         sessions.hasMany(models.scores, {
             foreignKey: 'sessionId',
             as: 'scores',
+        });
+
+        // Add hook to update suite.updated after session creation
+        sessions.addHook('afterCreate', async (session, options) => {
+            const { suiteId, date } = session;
+
+            if (!suiteId || !date) return;
+
+            await models.suites.update(
+                { updated: date },
+                { where: { id: suiteId }, transaction: options.transaction }
+            );
         });
     };
     return sessions;

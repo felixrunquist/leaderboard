@@ -26,6 +26,13 @@ import initializeDb from './models/index.js';
         email: 'admin@wearebasis.com',
         admin: 1
     });
+    
+    const user3 = await models.users.create({
+        name: 'John Doe',
+        username: 'johndoe',
+        password: 'test123',
+        email: 'johndoe@wearebasis.com'
+    });
 
     //Create test data
     const testCase1 = await models.testcases.create({ name: 'Arc fault detection', runCommand: './run_arc_fault' })
@@ -41,17 +48,21 @@ import initializeDb from './models/index.js';
     // await suite2.addUser(user1.id);
     suite2.addTestcases([testCase3, testCase4])
 
-    const session1 = await models.sessions.create({suiteId: suite1.id, username: user1.username})
+    const session1 = await models.sessions.create({name: 'perfect', suiteId: suite1.id, username: user1.username})
     await models.scores.create({sessionId: session1.id, testCaseId: testCase1.id, score: 20})
     await models.scores.create({sessionId: session1.id, testCaseId: testCase2.id, score: 40})
 
-    const session2 = await models.sessions.create({suiteId: suite1.id, username: user1.username})
+    const session2 = await models.sessions.create({name: 'random-chance', suiteId: suite1.id, username: user1.username})
     await models.scores.create({sessionId: session2.id, testCaseId: testCase1.id, score: 18.2})
     await models.scores.create({sessionId: session2.id, testCaseId: testCase2.id, score: 35})
 
-    const session3 = await models.sessions.create({suiteId: suite2.id, username: user1.username})
+    const session3 = await models.sessions.create({name: 'garoth-mean', suiteId: suite2.id, username: user1.username})
     await models.scores.create({sessionId: session3.id, testCaseId: testCase3.id, score: 0.97})
-    await models.scores.create({sessionId: session3.id, testCaseId: testCase4.id, score: 8.4})
+    await models.scores.create({sessionId: session3.id, testCaseId: testCase4.id, score: 0.54})
+
+    const session4 = await models.sessions.create({name: 'johns-update', suiteId: suite2.id, username: user3.username})
+    await models.scores.create({sessionId: session4.id, testCaseId: testCase3.id, score: 0.48})
+    await models.scores.create({sessionId: session4.id, testCaseId: testCase4.id, score: 0.63})
 
 
     console.log("Populated database");

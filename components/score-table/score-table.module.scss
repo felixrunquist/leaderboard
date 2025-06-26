@@ -1,0 +1,5 @@
+.gridContainer {background-color: transparent;
+    > * {width: calc(50% - 1rem); }
+    > *:not(:last-child) {margin-right: .5rem;}
+    > *:not(:first-child) {margin-left: .5rem;}
+}

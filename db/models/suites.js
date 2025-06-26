@@ -15,7 +15,12 @@ export default function suites(sequelize, DataTypes) {
             defaultValue: 'avg',
             allowNull: true,
         },
-        date: {
+        created: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+        },
+        updated: {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,

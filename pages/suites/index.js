@@ -6,7 +6,7 @@ import Widgets from "@/c/widgets";
 import SuitesTable from "@/c/suites-table";
 import { SITE_NAME } from "@/l/constants";
 
-export default function Home() {
+export default function Suites() {
     return (<>
         <Head>
             <title>{SITE_NAME}</title>
@@ -14,8 +14,7 @@ export default function Home() {
         </Head>
         <Header />
         <div className='container'>
-            <Widgets/>
-            <LastSessions/>
+            <h2>Suites</h2>
             <SuitesTable/>
         </div>
     </>);

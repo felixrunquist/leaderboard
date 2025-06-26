@@ -13,14 +13,14 @@ const handler = createHandler();
  *     tags:
  *       - Suites
  *     summary: Get paginated list of test suites
- *     description: Returns a paginated list of test suites ordered by ascending ID. Supports pagination using a `continueToken`.
+ *     description: Returns a paginated list of test suites ordered by most recently updated. Pagination uses a base64-encoded `continueToken` combining `updated` timestamp and `id`.
  *     parameters:
  *       - in: query
  *         name: continueToken
  *         schema:
  *           type: string
  *         required: false
- *         description: Base64 encoded token to continue fetching suites after the last received ID.
+ *         description: "Base64 encoded token to continue fetching suites after the last seen updated timestamp and ID (format: updated|id)."
  *     responses:
  *       200:
  *         description: List of suites with optional continue token for pagination
@@ -40,7 +40,10 @@ const handler = createHandler();
  *                         type: string
  *                       rankAlgorithm:
  *                         type: string
- *                       date:
+ *                       created:
+ *                         type: string
+ *                         format: date-time
+ *                       updated:
  *                         type: string
  *                         format: date-time
  *                       users:
@@ -60,52 +63,48 @@ const handler = createHandler();
  *                   description: Token to use for fetching the next page of suites
  *       400:
  *         description: Invalid continue token
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: boolean
- *                 message:
- *                   type: string
  *       500:
  *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: boolean
- *                 message:
- *                   type: string
  */
 
 const PAGE_SIZE = 100;
-//Get all test suites
+
 handler.get(async (req, res) => {
     const models = await initializeDb();
     const { continueToken } = req.query;
 
+    let lastUpdated = null;
+    let lastId = null;
 
-    let lastSeenId = 0;
     if (continueToken) {
         try {
             const decoded = Buffer.from(continueToken, 'base64').toString('utf8');
-            lastSeenId = parseInt(decoded, 10);
-        } catch (err) {
+            [lastUpdated, lastId] = decoded.split('|');
+            lastId = parseInt(lastId, 10);
+            if (isNaN(lastId) || !lastUpdated) throw new Error();
+        } catch {
             return res.status(400).json({ error: true, message: 'Invalid continue token' });
         }
     }
 
     try {
+        const where = lastUpdated
+            ? {
+                  [models.Sequelize.Op.or]: [
+                      { updated: { [models.Sequelize.Op.lt]: lastUpdated } },
+                      {
+                          updated: lastUpdated,
+                          id: { [models.Sequelize.Op.gt]: lastId },
+                      },
+                  ],
+              }
+            : undefined;
+
         const results = await models.suites.findAll({
-            where: lastSeenId
-                ? { id: { [models.Sequelize.Op.gt]: lastSeenId } }
-                : undefined,
-            order: [['id', 'ASC']],
-            attributes: ['id', 'name', 'rankAlgorithm', 'date'],
+            where,
+            order: [['updated', 'DESC'], ['id', 'ASC']],
+            limit: PAGE_SIZE + 1,
+            attributes: ['id', 'name', 'rankAlgorithm', 'created', 'updated'],
             include: [
                 {
                     model: models.users,
@@ -114,25 +113,24 @@ handler.get(async (req, res) => {
                     attributes: ['name', 'username', 'email'],
                 },
             ],
-            limit: PAGE_SIZE + 1, // Fetch one extra to check if there's more
         });
 
         let nextToken = null;
         if (results.length > PAGE_SIZE) {
             const lastSuite = results[PAGE_SIZE - 1];
-            nextToken = Buffer.from(String(lastSuite.id), 'utf8').toString('base64');
-            results.length = PAGE_SIZE; // trim extra result
+            nextToken = Buffer.from(`${lastSuite.updated}|${lastSuite.id}`, 'utf8').toString('base64');
+            results.length = PAGE_SIZE;
         }
 
-        return res.status(200).json({
+        res.status(200).json({
             suites: results,
             continueToken: nextToken,
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: true, message: 'Server errror - failed to fetch suites' });
+        console.error('Failed to fetch suites:', err);
+        res.status(500).json({ error: true, message: 'Server error - failed to fetch suites' });
     }
-})
+});
 
 /**
  * @swagger
