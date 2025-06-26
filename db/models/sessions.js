@@ -30,17 +30,22 @@ export default function sessions(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: true,
         },
+        totalScore: {
+            type: DataTypes.FLOAT,
+            allowNull: true
+        }
     });
     sessions.associate = function (models) {
         // associations can be defined here
         sessions.belongsTo(models.suites, {
             foreignKey: 'suiteId',
             as: 'suite',
+            onDelete: 'CASCADE',
         });
 
         sessions.belongsTo(models.users, {
             foreignKey: 'user',
-            targetKey: 'username', // 👈 important: points to a non-primary column
+            targetKey: 'username', // important: points to a non-primary column
             as: 'userDetails',
         });
 

@@ -1,6 +1,9 @@
 import handler from "@/l/api-handler";
 import initializeDb from "db/models";
 
+import { verifyToken, verifyUser } from "@/l/auth";
+import cookie from 'cookie';
+
 /**
  * @swagger
  * /api/leaderboard/suites:
@@ -11,7 +14,7 @@ import initializeDb from "db/models";
  *     description: Returns a paginated list of test suites ordered by ascending ID. Supports pagination using a `continueToken`.
  *     parameters:
  *       - in: query
- *         name: continue
+ *         name: continueToken
  *         schema:
  *           type: string
  *         required: false
@@ -35,7 +38,20 @@ import initializeDb from "db/models";
  *                         type: string
  *                       rankAlgorithm:
  *                         type: string
- *                       # Add other suite properties here if any
+ *                       date:
+ *                         type: string
+ *                         format: date-time
+ *                       users:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             username:
+ *                               type: string
+ *                             name:
+ *                               type: string
+ *                             email:
+ *                               type: string
  *                 continueToken:
  *                   type: string
  *                   nullable: true
@@ -59,6 +75,8 @@ import initializeDb from "db/models";
  *               type: object
  *               properties:
  *                 error:
+ *                   type: boolean
+ *                 message:
  *                   type: string
  */
 
@@ -86,6 +104,14 @@ handler.get(async (req, res) => {
                 : undefined,
             order: [['id', 'ASC']],
             attributes: ['id', 'name', 'rankAlgorithm', 'date'],
+            include: [
+                {
+                    model: models.users,
+                    through: { attributes: [] },
+                    as: 'users',
+                    attributes: ['name', 'username', 'email'],
+                },
+            ],
             limit: PAGE_SIZE + 1, // Fetch one extra to check if there's more
         });
 
@@ -113,7 +139,7 @@ handler.get(async (req, res) => {
  *     tags:
  *       - Suites
  *     summary: Create a new test suite
- *     description: Creates a new test suite and optionally associates test cases by their IDs or names.
+ *     description: Creates a new test suite and optionally associates test cases by their IDs or names. The currently authenticated user is added as one of the owners of the suite
  *     requestBody:
  *       required: true
  *       content:
@@ -168,6 +194,17 @@ handler.get(async (req, res) => {
  *                             type: string
  *                           weight:
  *                             type: number
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                           email:
+ *                             type: string
  *       400:
  *         description: Bad request (e.g. missing name or invalid test cases)
  *         content:
@@ -208,6 +245,13 @@ handler.post(async (req, res) => {
     const models = await initializeDb();
     const { name, rankAlgorithm, testCases } = typeof req.body != 'object' ? JSON.parse(req.body) : req.body;
 
+    // Get current user from cookie or header
+    const cookies = cookie.parse(req.headers.cookie || '');
+    const token = cookies.token || req.headers['authorization'];
+
+    const verifiedToken = await verifyToken(token);
+    // const currentUser = await verifyUser(verifiedToken?.payload);
+
     if (!name || typeof name !== 'string') {
         return res.status(400).json({ error: true, message: "Suite name is required and must be a string." });
     }
@@ -217,6 +261,17 @@ handler.post(async (req, res) => {
             name,
             rankAlgorithm: rankAlgorithm || 'avg',
         });
+
+        const user = await models.users.findOne({
+            where: {username: verifiedToken.payload.username}
+        })
+
+        if(!user){
+            return res.status(403).json({ error: true, message: "Unauthorized" });
+        }
+
+        // Associate the current user with the suite
+        await newSuite.addUser(user.id);
 
         // If testCases are provided, associate them
         if (Array.isArray(testCases) && testCases.length > 0) {
@@ -242,7 +297,7 @@ handler.post(async (req, res) => {
             await newSuite.setTestcases(foundTestCases);
         }
 
-        const suiteWithTestCases = await models.suites.findOne({
+        const fullSuite = await models.suites.findOne({ //Suite with test cases and user
             where: { id: newSuite.id },
             include: [
                 {
@@ -251,10 +306,16 @@ handler.post(async (req, res) => {
                     as: 'testcases',
                     attributes: ['id', 'name', 'weight'],
                 },
+                {
+                    model: models.users,
+                    through: { attributes: [] },
+                    as: 'users',
+                    attributes: ['name', 'username', 'email'],
+                },
             ],
         });
 
-        return res.status(201).json({ suite: suiteWithTestCases });
+        return res.status(201).json({ suite: fullSuite });
     } catch (error) {
         console.error("Failed to create suite:", error);
 

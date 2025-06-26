@@ -25,7 +25,7 @@ export default function testcases(sequelize, DataTypes) {
         }
     });
     testcases.associate = function (models) {
-        testcases.belongsToMany(models.suites, {through: 'Testcases_Suites', foreignKey: 'testCaseId'})
+        testcases.belongsToMany(models.suites, {through: 'Testcases_Suites', foreignKey: 'testCaseId', onDelete: 'CASCADE'})
     };
     return testcases;
 };

@@ -34,9 +34,11 @@ import initializeDb from './models/index.js';
     const testCase4 = await models.testcases.create({ name: 'Energy usage calibration', runCommand: './calibrate_energy_usage' })
 
     const suite1 = await models.suites.create({name: 'Arc fault algorithms'})
+    await suite1.addUser(user1.id);
     suite1.addTestcases([testCase1, testCase2])
 
     const suite2 = await models.suites.create({name: 'Calibration algorithms', rankAlgorithm: 'sum'})
+    // await suite2.addUser(user1.id);
     suite2.addTestcases([testCase3, testCase4])
 
     const session1 = await models.sessions.create({suiteId: suite1.id, username: user1.username})

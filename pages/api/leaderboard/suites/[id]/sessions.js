@@ -1,5 +1,4 @@
 import { verifyToken, verifyUser } from "@/l/auth";
-import { calculateSessionScore } from "@/l/db-helper";
 import handler from "@/lib/api-handler";
 import initializeDb from "db/models";
 
@@ -96,11 +95,17 @@ handler.get(async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
 
     try {
+        // Verify that the suite exists
+        const suite = await models.suites.findByPk(suiteId);
+        if (!suite) {
+            return res.status(404).json({ error: true, message: `Suite with id ${suiteId} not found.` });
+        }
+
         let sessionList = await models.sessions.findAll({
             where: { suiteId },
             order: [['date', 'DESC']],
             limit,
-            attributes: ['commitId', 'suiteId', 'date', 'id', 'username'],
+            attributes: ['commitId', 'suiteId', 'date', 'id', 'username', 'totalScore'],
             include: [
                 {
                     model: models.suites,
@@ -140,7 +145,7 @@ handler.get(async (req, res) => {
         });
 
         //Calculate the scores
-        sessionList = sessionList.map(i => ({ ...i, score: calculateSessionScore(i) }))
+        // sessionList = sessionList.map(i => ({ ...i, score: calculateSessionScore(i) }))
 
 
         res.status(200).json({ sessions: sessionList });
@@ -159,15 +164,15 @@ handler.get(async (req, res) => {
  *       - Suites
  *     summary: Create a session for a suite
  *     description: >
- *       Creates a new session under the specified suite and records scores for associated test cases.
- *       The user is inferred from the authorization token. Test case scores must correspond to test cases in the suite.
+ *       Creates a new session under the specified suite and records scores for test cases associated with that suite.
+ *       Only users who are owners of the suite or admins can submit a session. The user is identified from the authentication token.
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID of the suite
+ *         description: ID of the suite to associate the session with
  *     requestBody:
  *       required: true
  *       content:
@@ -179,14 +184,14 @@ handler.get(async (req, res) => {
  *                 type: string
  *                 format: date-time
  *                 example: "2025-06-23T04:24:26.559Z"
- *                 description: Optional ISO date of the session
+ *                 description: Optional ISO-formatted session date
  *               commitId:
  *                 type: string
  *                 example: "a1b2c3d"
- *                 description: Optional commit ID for the session
+ *                 description: Optional commit ID to associate with the session
  *               scores:
  *                 type: array
- *                 description: Scores for test cases belonging to the suite
+ *                 description: Scores for test cases in the suite
  *                 items:
  *                   type: object
  *                   required:
@@ -196,7 +201,7 @@ handler.get(async (req, res) => {
  *                     testCaseId:
  *                       type: integer
  *                       example: 42
- *                       description: ID of a test case in the suite
+ *                       description: ID of a test case associated with the suite
  *                     score:
  *                       type: number
  *                       example: 0.95
@@ -209,12 +214,39 @@ handler.get(async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 sessionId:
- *                   type: integer
- *                 message:
- *                   type: string
+ *                 session:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     suiteId:
+ *                       type: integer
+ *                     username:
+ *                       type: string
+ *                     date:
+ *                       type: string
+ *                       format: date-time
+ *                     commitId:
+ *                       type: string
+ *                       nullable: true
+ *                     totalScore:
+ *                       type: number
+ *                       nullable: true
+ *                     scores:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           testCaseId:
+ *                             type: integer
+ *                           score:
+ *                             type: number
+ *                           testCaseName:
+ *                             type: string
+ *                           testCaseWeight:
+ *                             type: number
  *       400:
- *         description: Invalid input (e.g. missing scores or invalid test case)
+ *         description: Bad request (invalid input or mismatched test case IDs)
  *         content:
  *           application/json:
  *             schema:
@@ -225,7 +257,7 @@ handler.get(async (req, res) => {
  *                 message:
  *                   type: string
  *       403:
- *         description: Unauthorized (missing or invalid token)
+ *         description: Forbidden (user not authorized to create a session for this suite)
  *         content:
  *           application/json:
  *             schema:
@@ -247,7 +279,7 @@ handler.get(async (req, res) => {
  *                 message:
  *                   type: string
  *       500:
- *         description: Server error during session creation
+ *         description: Internal server error during session creation
  *         content:
  *           application/json:
  *             schema:
@@ -258,6 +290,7 @@ handler.get(async (req, res) => {
  *                 message:
  *                   type: string
  */
+
 import cookie from 'cookie';
 
 handler.post(async (req, res) => {
@@ -269,9 +302,9 @@ handler.post(async (req, res) => {
     const cookies = cookie.parse(req.headers.cookie || '');
     const token = cookies.token || req.headers['authorization']
     const verifiedToken = await verifyToken(token);
-    const { username } = await verifyUser(verifiedToken.payload);
+    const { username, admin } = await verifyUser(verifiedToken.payload);
     if (!verifiedToken || !username) {
-        res.status(403).json({ error: true, message: "Unauthorized" });
+        return res.status(403).json({ error: true, message: "Unauthorized" });
     }
 
     if (!Array.isArray(scores)) {
@@ -291,15 +324,27 @@ handler.post(async (req, res) => {
     try {
         // Verify that the suite exists
         const suite = await models.suites.findByPk(suiteId, {
-            include: [{
-                model: models.testcases,
-                as: 'testcases',
-                attributes: ['id']
-            }]
+            include: [
+                {
+                    model: models.testcases,
+                    as: 'testcases',
+                    attributes: ['id']
+                },
+                {
+                    model: models.users,
+                    through: { attributes: [] },
+                    as: 'users',
+                    attributes: ['name', 'username', 'email'],
+                },
+            ]
         });
 
         if (!suite) {
             return res.status(404).json({ error: true, message: `Suite with id ${suiteId} not found.` });
+        }
+
+        if(!suite.users.map(i => i.username).includes(username) && !admin){
+            return res.status(403).json({ error: true, message: `To add sessions to the suite ${suite.name} you must be an owner of it or an admin user. `});
         }
 
         // Extract valid testCase IDs that belong to the suite
@@ -372,5 +417,6 @@ handler.post(async (req, res) => {
         return res.status(500).json({ error: true, message: "Failed to create session." });
     }
 });
+
 
 export default handler;

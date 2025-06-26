@@ -21,7 +21,6 @@ export default function users(sequelize, DataTypes) {
         {
             hooks: {
                 beforeCreate: async function (user, options) {
-                    // Do stuff
                     user.password = bcrypt.hashSync(user.password, 10);
                 },
             },
@@ -29,7 +28,7 @@ export default function users(sequelize, DataTypes) {
     );
     users.associate = function (models) {
         // associations can be defined here
-        users.belongsToMany(models.suites, {through: 'Users_Suites', foreignKey: 'userId'})
+        users.belongsToMany(models.suites, {through: 'Users_Suites', foreignKey: 'userId', onDelete: 'CASCADE'})
     };
     return users;
 };
