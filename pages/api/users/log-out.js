@@ -1,5 +1,5 @@
-import handler from "@/l/api-handler";
-
+import createHandler from '@/lib/api-handler';
+const handler = createHandler();
 /**
  * @swagger
  * /api/users/log-out:

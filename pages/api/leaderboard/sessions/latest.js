@@ -1,7 +1,7 @@
 import { calculateSessionScore } from "@/l/db-helper";
-import handler from "@/lib/api-handler";
 import initializeDb from "db/models";
-
+import createHandler from '@/lib/api-handler';
+const handler = createHandler();
 /**
  * @swagger
  * /api/leaderboard/sessions/latest:

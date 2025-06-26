@@ -1,15 +1,13 @@
-import handler from "@/l/api-handler";
 import initializeDb from '@/db/models/index.js';
-
 import bcrypt from 'bcryptjs';
 import { nanoid } from 'nanoid'
 import { SignJWT } from 'jose'
-
 import { jwtkey } from '@/lib/constants'
-
 import cookie from 'cookie';
-
 import { verifyToken, verifyUser } from "@/l/auth";
+
+import createHandler from '@/lib/api-handler';
+const handler = createHandler();
 /**
  * @swagger
  * /api/users/auth:

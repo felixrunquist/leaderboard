@@ -1,6 +1,7 @@
 import { calculateSessionScore } from "@/l/db-helper";
-import handler from "@/lib/api-handler";
 import initializeDb from "db/models";
+import createHandler from '@/lib/api-handler';
+const handler = createHandler();
 
 /**
  * @swagger
@@ -27,7 +28,6 @@ import initializeDb from "db/models";
 // Counts all the suites
 handler.get(async (req, res) => {
     const models = await initializeDb();
-
     try {
         const count = await models.suites.count()
         res.status(200).json({ count });

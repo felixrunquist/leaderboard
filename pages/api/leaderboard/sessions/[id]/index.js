@@ -1,7 +1,8 @@
 import cookie from 'cookie';
 import initializeDb from "db/models";
 import {verifyToken, verifyUser} from '@/lib/auth';
-import handler from '@/lib/api-handler';
+import createHandler from '@/lib/api-handler';
+const handler = createHandler();
 
 /**
  * @swagger

@@ -1,5 +1,6 @@
 import swaggerSpec from '@/lib/swagger';
-import handler from "@/lib/api-handler";
+import createHandler from '@/lib/api-handler';
+const handler = createHandler();
 
 handler.get((req, res) => {
     if (process.env.NODE_ENV === 'development') {
