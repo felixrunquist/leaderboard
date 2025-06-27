@@ -1,6 +1,13 @@
+import dynamic from 'next/dynamic';
+
+// Load chart without SSR
+const ReactEChartsCore = dynamic(
+  () => import('echarts-for-react'),
+  { ssr: false }
+);
+
+
 import React from 'react';
-// import the core library.
-import ReactEChartsCore from 'echarts-for-react/lib/core';
 // Import the echarts core module, which provides the necessary interfaces for using echarts.
 import * as echarts from 'echarts/core';
 // Import charts, all with Chart suffix
