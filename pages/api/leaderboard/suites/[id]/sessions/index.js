@@ -246,6 +246,10 @@ handler.get(async (req, res) => {
  *                 type: string
  *                 example: "a1b2c3d"
  *                 description: Optional commit ID to associate with the session
+ *               name:
+ *                 type: string
+ *                 example: "a1b2c3d"
+ *                 description: A name to associate with the session
  *               scores:
  *                 type: array
  *                 description: Scores for test cases in the suite
@@ -353,7 +357,7 @@ import cookie from 'cookie';
 handler.post(async (req, res) => {
     const models = await initializeDb();
     const suiteId = req.query.id;
-    const { date, commitId, scores } = typeof req.body != 'object' ? JSON.parse(req.body) : req.body;
+    const { date, commitId, scores, name } = typeof req.body != 'object' ? JSON.parse(req.body) : req.body;
 
     //Get username from auth token
     const cookies = cookie.parse(req.headers.cookie || '');
@@ -422,6 +426,7 @@ handler.post(async (req, res) => {
             date: formattedDate || undefined,
             suiteId,
             username,
+            name,
             commitId: commitId || null,
         });
 
@@ -432,7 +437,7 @@ handler.post(async (req, res) => {
             score: s.score,
         }));
 
-        await models.scores.bulkCreate(scoresToCreate);
+        await models.scores.bulkCreate(scoresToCreate, {individualHooks: true});
 
         //Get the created session
         let session = await models.sessions.findOne({

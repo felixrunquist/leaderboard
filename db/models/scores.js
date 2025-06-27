@@ -59,14 +59,13 @@ export default function scores(sequelize, DataTypes) {
         };
 
         const totalScore = calculateSessionScore(enrichedSession);
-        console.log('Total score for ' + session.name, totalScore);
 
         session.totalScore = totalScore;
         await session.save({ transaction: options.transaction });
     }
 
     scores.associate = function (models) {
-        // associations can be defined here
+        // Associations can be defined here
         scores.belongsTo(models.sessions, {
             foreignKey: 'sessionId',
             as: 'session',

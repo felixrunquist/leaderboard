@@ -6,7 +6,7 @@ A web application built with **Next.js**, **Sequelize**, and **SQLite** for mana
 
 ## 📦 Requirements
 
-- **Node.js** ()
+- **Node.js**
 - **Yarn** (or use `npm` if preferred)
 
 ---
@@ -38,23 +38,10 @@ yarn start
 ## 🗃️ Database Setup
 
 This project uses **Sequelize** as the ORM and supports a SQLite database.
-
-### Create and Seed the Database
-
-The following command will:
-
-- Create all Sequelize models and tables  
-- Populate initial dummy data for testing (suites, users, sessions, scores)
-
-To do this, run:
-
-```bash
-yarn initdb
-```
-
 > 💡 Make sure your database connection string is configured in `lib/constants.js` or via environment variables before running `initdb`.
 
 ---
+
 
 ## 🧪 Development Workflow
 
@@ -79,6 +66,16 @@ Runs the app in development mode at: http://localhost:3000
 - **Data Visualization**: Integrated with `echarts` to visualize score progression over time.  
 - **Hooks & Score Calculation**: Sequelize hooks recalculate total score when scores change.  
 - **Swagger API Docs**: Available at `/docs` (http://localhost:3000/docs)
+
+---
+
+## 📑 Commands
+
+* **`yarn dev`** - launches the development environment at http://localhost:3000
+* **`yarn build`** - Builds the project for production
+* **`yarn start`** - Starts the production server
+* **`yarn initdb`** - Initializes an empty database with a default admin user (username: `admin`, password: `test123`)
+* **`yarn testdb`** - Initializes a database with dummy test results for testing performance and functionality. 
 
 ---
 

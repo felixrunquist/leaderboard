@@ -9,9 +9,7 @@
         "start": "next start",
         "lint": "next lint",
         "initdb": "node db/init.js",
-        "docker-build": "DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker/docker-compose.yml build --no-cache",
-        "docker-start": "docker compose -f docker/docker-compose.yml up -d",
-        "docker-stop": "docker compose -f docker/docker-compose.yml down"
+        "testdb": "node db/test.js"
     },
     "dependencies": {
         "@ag-grid-community/client-side-row-model": "^32.3.5",

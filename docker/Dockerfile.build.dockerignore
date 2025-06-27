@@ -1,9 +1,0 @@
-Dockerfile
-.dockerignore
-node_modules/
-docker-images/
-docker/
-npm-debug.log
-README.md
-.next
-.git
