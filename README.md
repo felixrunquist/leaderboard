@@ -1,67 +1,190 @@
-This is a customized [Next.js](https://nextjs.org/) project. After noticing that I always start with the same commands when starting a new Next.js project, I decided to create a boilerplate of my own.
+# 🏆 Leaderboard App
 
-It has special features such as sass support and custom file paths. I use it personally as a boilerplate for my Next.js projects, and am very opinionated with what I include in it, but feel free to use it if it works for you too!
+A web application built with **Next.js**, **Sequelize**, and **SQLite** for managing and visualizing test suite sessions, user scores, and rankings. Features Swagger-powered API documentation and supports advanced pagination, charting, and session ranking logic.
 
-The project is managed by default using the Yarn package manager. I usually have a better experience with it, especially when dealing with conflicting dependencies. If you don't have it installed, you can run `npm install yarn --global` to install.
+---
 
-## Features
-- [Sass](https://sass-lang.com/) support in global and modular stylesheets.
-- Custom file paths, such as `@/l/` which maps to `/lib` (This can be modified in `jsconfig.json`)
-- A component creator, which will create a folder with the component name as well as a stylesheet. To create a new component, run `node new-component.js [component name]`.
-- Custom media queries. In the `globals.scss` are defined custom includes for different breakpoints. This is great for building responsive layouts as it makes breakpoints easier to use in modules, you can use them like so:
+## 📦 Requirements
+
+- **Node.js** ()
+- **Yarn** (or use `npm` if preferred)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Install Dependencies
+```bash
+yarn install
 ```
-@import 'styles/constants.scss';
 
-.element {width: 100%; } // Default width for an element (for mobile)
-
-@include bp(md){
-  .element {width: 80%; } // Width on devices wider than 768px
-}
-
-@include bp(lg){
-  .element {width: 60%; } // Width on devices wider than 1024px
-}
-
-@include bp(xl){
-  .element {width: 50%; } // Width on devices wider than 1280px
-}
-
-@include bp(xxl){
-  .element {width: 40%; } // Width on devices wider than 1536px
-}
-
+### 2. Initialize the database 
+```bash
+yarn initdb
 ```
-- [Bundle analyzer](https://nextjs.org/docs/pages/building-your-application/optimizing/bundle-analyzer). This allows you to view the size of your build bundle. You can run it during build with `ANALYZE=true yarn run build`.
-- [Docker support](https://nextjs.org/docs/deployment#docker-image): run your Next.js server in production using Docker. This is platform-agnostic and makes deploying easier. To build the docker image, execute `make build` in the project root. This will compile the project and install necessary dependancies in the image. Run the docker image with `make run`. Note: to successfully build the docker image, the `output: 'standalone'` parameter in `next.config.js` is required. (https://github.com/vercel/next.js/tree/canary/examples/with-docker). 
-- Privacy oriented: Next.js telemetry is disabed.
 
-## What I don't use
-- CSS frameworks such as Tailwind. I find that this only shifts the CSS issue to the `class` attribute, and you end up with extremely long strings like `bg-slate-900 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 text-white font-semibold h-12 px-6 rounded-lg w-full flex items-center justify-center sm:w-auto dark:bg-sky-500 dark:highlight-white/20 dark:hover:bg-sky-400` (Case in point: the [Tailwind](https://tailwindcss.com/) website). [This article](https://www.smashingmagazine.com/2022/05/you-dont-need-ui-framework/) summarises the problem extremely well.
-- I don't use TypeScript, however the project supports TypeScript files ending with `.ts` or `.tsx`. I've never been a fan of types in JS, and I feel like the time spent creating and debugging custom types doesn't justify the little time that may be saved by avoiding errors caused by types. Who knows, maybe my opinion will change.
+### 3. Build the project 
+```bash
+yarn build
+```
 
-## Getting started
+### 4. Start the production environment 
+```bash
+yarn start
+```
 
-First, clone the project locally using `git clone`.
+---
 
-Next, run `yarn install` to add dependencies.
+## 🗃️ Database Setup
 
-Then, run the development server:
+This project uses **Sequelize** as the ORM and supports a SQLite database.
+
+### Create and Seed the Database
+
+The following command will:
+
+- Create all Sequelize models and tables  
+- Populate initial dummy data for testing (suites, users, sessions, scores)
+
+To do this, run:
 
 ```bash
-yarn run dev
+yarn initdb
 ```
-.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> 💡 Make sure your database connection string is configured in `lib/constants.js` or via environment variables before running `initdb`.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+---
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## 🧪 Development Workflow
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### Start the Next.js Development Server  
+**`yarn dev`**  
+Runs the app in development mode at: http://localhost:3000
 
-## Deploy on Vercel
+### Build for Production  
+**`yarn build`**
 
-The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js. This project also comes with built-in docker support, with all you need to deploy and run your project in a self-supported container.
-To build the image, run the command `make build`.
-You can then run it with the command `make start`. It will be available at [http://localhost:3000](http://localhost:3000).
+### Start Production Server  
+**`yarn start`**
+
+---
+
+## 📊 Features
+
+- **Authentication**: Manage suite ownership with users, and authenticate access to the database.  
+- **Test Suites & Sessions**: Organize and rank sessions within test suites using custom scoring logic.  
+- **Pagination**: Continue-token based pagination with base64 encoding.  
+- **Session Ranking**: Uses SQL window functions for efficient rank calculation.  
+- **Data Visualization**: Integrated with `echarts` to visualize score progression over time.  
+- **Hooks & Score Calculation**: Sequelize hooks recalculate total score when scores change.  
+- **Swagger API Docs**: Available at `/docs` (http://localhost:3000/docs)
+
+---
+
+## 📘 API Documentation
+
+Auto-generated using **Swagger** (via `swagger-jsdoc` + `swagger-ui-express`).
+
+Visit `/docs` while the app is running to view all available endpoints with schemas, parameters, and responses.
+
+---
+
+## 🔐 Authentication
+
+This app uses **JWT-based authentication** with a `users` table in the database and **Next.js middleware** to protect API routes and pages.
+
+### Users Table
+
+The `users` table stores basic authentication data:
+
+- `id`
+- `username`
+- `name`
+- `email`
+- `passwordHash` (hashed using bcrypt)
+
+---
+
+### 🔧 JWT Authentication
+
+**Login flow:**
+
+1. User submits credentials (`username` + `password`)
+2. Server verifies the password (bcrypt)
+3. A **JWT** is signed and returned
+4. The client stores the JWT (typically in a cookie or localStorage)
+
+**Token contains:**
+
+```json
+{
+  "id": 123,
+  "username": "alice",
+  "name": "Alice Doe"
+}
+```
+
+---
+
+### 🛡 Middleware Protection
+
+The app uses **Next.js Middleware** (`middleware.ts`) to protect private routes.
+
+Example:
+
+```js
+import { NextResponse } from 'next/server';
+import { verifyJwt } from './lib/auth';
+
+export function middleware(request) {
+  const token = request.cookies.get('token')?.value;
+
+  if (!token || !verifyJwt(token)) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  return NextResponse.next();
+}
+```
+
+Apply this middleware to secure routes by configuring the `matcher` field in `middleware.ts`.
+
+---
+
+## 🔍 Notable Endpoints
+
+- **`GET /api/leaderboard/suites`**: Paginated list of test suites (by updated timestamp)  
+- **`GET /api/leaderboard/suites/{id}/sessions`**: Fetches all sessions for a suite, with pagination  
+- **`GET /api/leaderboard/suites/{id}/sessions/{sessionid}`**: Returns a session, its scores, rank, and suite stats  
+
+---
+
+## 🛠 Notes
+
+- To improve Sequelize performance:
+  - Use **bulk inserts** instead of per-record creation
+  - Use **window functions** and `raw: true` for rank and aggregate queries
+- For React performance:
+  - Use `useMemo()` for heavy computations like ECharts options
+  - Use `ReactEChartsCore` with pre-registered chart types
+
+---
+
+## 📁 Project Structure
+
+```
+
+/lib              → Helper functions (e.g. DB score calculation)  
+/db/models        → Sequelize models & associations  
+/styles           → SCSS stylesheets  
+/pages            → Next.js routes and page components  
+/pages/api        → RESTful API routes  
+/docs             → Swagger UI setup
+```
+
+---
+
+## 🧪 Testing (Optional Setup)
+
+This project can be extended with unit tests via `Cypress` or `jest`. Currently, test setup is not included.
