@@ -7,6 +7,8 @@ import { SITE_NAME } from "@/l/constants";
 import { useRouter } from "next/router";
 import ScoreTable from '@/c/score-table';
 import SessionStatistics from '@/c/session-statistics';
+import LineChart from '@/c/line-chart';
+import Breadcrumb from '@/c/breadcrumb';
 
 export default function Suites() {
     const router = useRouter();
@@ -18,7 +20,7 @@ export default function Suites() {
     async function fetchSuite() {
         if (window[`saved-suite-${router.query.suiteid}`]) {
             console.log("Retrieved suite from window!")
-            setSessionData(window[`saved-suite-${router.query.suiteid}-sessions`])
+            setSuiteData(window[`saved-suite-${router.query.suiteid}`])
             return;
         }
         const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}`);
@@ -65,9 +67,13 @@ export default function Suites() {
         console.log(session)
 
         //Calculate rank, min, max etc.
-        // sessions.sort((a,b) => a.totalScore - b.totalScore);
 
-        setSessionData({...session, rank: sessions.indexOf(session), totalSessions: sessions.length, minTotalScore: Math.min(...sessions.map(i => i.totalScore)), maxTotalScore: Math.max(...sessions.map(i => i.totalScore))})
+        setSessionData({...session, 
+            rank: sessions.indexOf(session) + 1, 
+            totalSessions: sessions.length, 
+            minTotalScore: Math.min(...sessions.map(i => i.totalScore)), 
+            maxTotalScore: Math.max(...sessions.map(i => i.totalScore))
+        })
     }
 
     useEffect(() => {
@@ -87,8 +93,13 @@ export default function Suites() {
         </Head>
         <Header />
         <div className='container'>
+            <Breadcrumb>{[{href: '/', name: 'Home'}, {href: '/suites', name: 'Suites'}, {href: `/suites/${router.query.suiteid}`, name: suiteData ? suiteData.name : router.query.suiteid}, {name: sessionData ? sessionData.name : router.query.sessionid}]}</Breadcrumb>
             <h2>Session - {sessionData ? sessionData.name : router.query.sessionid}</h2>
             <SessionStatistics sessionData={sessionData} suiteData={suiteData}/>
+            <section>
+                <h3>Scores for this session</h3>
+                <LineChart values={sessionData?.scores.map(i => ({name: i.testCaseName, value: i.score})) || []}/>
+            </section>
             <ScoreTable data={sessionData?.scores}/>
         </div>
     </>);

@@ -12,11 +12,10 @@ function colorize(i) {
     return 'red';
 }
 
-export default function LogTimeChart({ values }) {
-    const [logScale, setLogScale] = useState('true')
+export default function LineChart({ values, time = false }) {
+    const [logScale, setLogScale] = useState(false)
 
-    const [maxValue, setMaxValue] = useState(0);
-    // const [ticks, setTicks] = useState([])
+    const [extrema, setExtrema] = useState({min: 0, max: 0});
 
     const allTicks = useMemo(() => [
         { delta: 0, label: 'Now' },
@@ -32,41 +31,55 @@ export default function LogTimeChart({ values }) {
         { delta: 60 * 60 * 24 * 365, label: '1yr' },
     ], [])
 
-    const getPosition = useCallback((i, max) => {
-        if (i == 0) return 1;
-        if(logScale == 'true'){
-            return 1 - Math.log(i) / Math.log(max)
+    const getPosition = useCallback((i, min, max) => {
+        if (time && i == 0) return 1;
+        let res; 
+        if(logScale){
+            res =  Math.log(i - min) / Math.log(max - min)
+        } else {
+            res =  (i - min) / (max - min)
         }
-        return 1 - i / max
-    }, [logScale])
+        return time ? 1 - res : res; 
+    }, [logScale, time])
 
     const points = useMemo(() => {
-        const p = values.map(i => ({ ...i, delta: getDelta(i.value) }))
-        const maxTimeValue = Math.max(...p.map(i => i.delta))
-        setMaxValue(maxTimeValue)
-        return p.sort((a,b) => b.delta - a.delta).map(i => ({ ...i, position: getPosition(i.delta, maxTimeValue), label: `${i.name} (${fromNow(i.value)})`, background: colorize(i.delta) }))
-    }, [values, logScale])
+        if(time){
+            const p = values.map(i => ({ ...i, delta: getDelta(i.value) }))
+            const maxTimeValue = Math.max(...p.map(i => i.delta))
+            setExtrema({min: 0, max: maxTimeValue})
+            return p.sort((a,b) => b.delta - a.delta).map(i => ({ ...i, position: getPosition(i.delta, 0, maxTimeValue), label: `${i.name} (${fromNow(i.value)})`, background: colorize(i.delta) }))
+        }else{
+            const max = Math.max(...values.map(i => i.value))
+            const min = Math.min(...values.map(i => i.value))
+            setExtrema({min, max})
+            return values.sort((a,b) => a.value - b.value).map(i => ({...i, position: getPosition(i.value, min, max), label: `${i.name} (${i.value})`, background: 'white'}))
+        }
+    }, [values, logScale, time])
 
     const ticks = useMemo(() => {
-        const visibleTicks = allTicks.filter(i => i.delta <= maxValue).map(i => ({ ...i, position: getPosition(i.delta * 1000, maxValue), fromNow: fromNow(new Date().getTime() - i.delta * 1000) }));
-        const lastLabel = fromNow(new Date().getTime() - maxValue);
-        if (!visibleTicks.map(i => i.fromNow).includes(lastLabel)) {
-            visibleTicks.push({ position: 0, label: lastLabel }) // Max value
+        if(time){
+            const visibleTicks = allTicks.filter(i => i.delta <= extrema.max).map(i => ({ ...i, position: getPosition(i.delta * 1000, extrema.min, extrema.max), fromNow: fromNow(new Date().getTime() - i.delta * 1000) }));
+            const lastLabel = fromNow(new Date().getTime() - maxValue);
+            if (!visibleTicks.map(i => i.fromNow).includes(lastLabel)) {
+                visibleTicks.push({ position: 0, label: lastLabel }) // Max value
+            }
+            return visibleTicks
+        }else{
+            return [{position: 0, label: "" + extrema.min}, {position: 1, label: "" + extrema.max}];
         }
-        return visibleTicks
-    }, [maxValue, logScale])
+    }, [extrema, logScale, time])
 
     if(!values || values.length == 0){
         return <p>Loading...</p>
     }
 
     return (<div className={styles.container}>
-        <div className={styles.toolbar}>
+        {/* <div className={styles.toolbar}>
             <label>
-                {logScale == 'true' ? 'Log scale' : 'Linear scale'}
-                <input type="checkbox" className="pill" checked={logScale == 'true'} onChange={e => setLogScale('' + e.target.checked)}/>
+                {logScale ? 'Log scale' : 'Linear scale'}
+                <input type="checkbox" className="pill" checked={logScale} onChange={e => setLogScale(e.target.checked)}/>
             </label>
-        </div>
+        </div> */}
         <div className={styles.chart}>
             <Tooltip id="tooltip" style={{ zIndex: 3 }} />
             {points.map(i => <span key={i.name} data-tooltip-position-strategy="fixed" data-tooltip-id="tooltip" data-tooltip-content={i.label} className={styles.point} style={{ left: `${i.position * 100}%`, background: i.background }} />)}

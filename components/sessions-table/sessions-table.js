@@ -9,7 +9,7 @@ export default function SessionsTable({data, ...props }) {
     const columns = useMemo(() => [
         {
             headerName: 'Rank',
-            valueFormatter: i => i.node.rowIndex + 1,
+            valueFormatter: i => data?.indexOf(i.data) + 1,
             sort: 'desc'
         },
         {
@@ -30,7 +30,7 @@ export default function SessionsTable({data, ...props }) {
             field: 'totalScore',
             valueFormatter: i => Math.round(i.value * 100) / 100,
         }
-    ], [])
+    ], [data])
 
     return (
         <section style={{ flex: 1, display: "flex", minHeight: "50rem", padding: 0, clipPath: 'inset(0px round .5rem)', }}>

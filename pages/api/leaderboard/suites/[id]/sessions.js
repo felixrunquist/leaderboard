@@ -11,7 +11,7 @@ const handler = createHandler();
  *       - Sessions
  *       - Suites
  *     summary: Get sessions for a specific suite
- *     description: Returns a list of sessions associated with a particular suite, along with suite details and calculated scores.
+ *     description: Returns a paginated list of sessions associated with a particular suite, ordered by score or date. Uses a Base64-encoded `continueToken` for pagination.
  *     parameters:
  *       - in: path
  *         name: id
@@ -28,6 +28,20 @@ const handler = createHandler();
  *           minimum: 1
  *           maximum: 100
  *         description: The number of sessions to return (max 100).
+ *       - in: query
+ *         name: order
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [date, score]
+ *           default: score
+ *         description: The field to order sessions by (`score` or `date`).
+ *       - in: query
+ *         name: continueToken
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Base64 encoded token to continue fetching sessions after the last seen date and ID (`date|id`).
  *     responses:
  *       200:
  *         description: List of sessions for the given suite
@@ -76,43 +90,69 @@ const handler = createHandler();
  *                               type: string
  *                             testCaseWeight:
  *                               type: number
+ *                 continueToken:
+ *                   type: string
+ *                   nullable: true
  *       500:
  *         description: Server error while fetching suite sessions
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: boolean
- *                 message:
- *                   type: string
  */
 
-
 //Get sessions of a particular suite
+const PAGE_SIZE = 50;
+
 handler.get(async (req, res) => {
-    const suiteId = req.query.id
-    let orderBy = 'score'; 
-    if(req.query.order == 'date'){
-        orderBy = 'date';
-    }
+    const suiteId = req.query.id;
+    const orderBy = req.query.order === 'date' ? 'date' : 'totalScore';
+    const limit = Math.min(parseInt(req.query.limit, 10) || PAGE_SIZE, 100);
+    const continueToken = req.query.continueToken;
 
     const models = await initializeDb();
-    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
+
+    let lastDate = null;
+    let lastId = null;
+
+    if (continueToken) {
+        try {
+            const decoded = Buffer.from(continueToken, 'base64').toString('utf8');
+            const [dateStr, idStr] = decoded.split('|');
+            lastDate = new Date(dateStr);
+            lastId = parseInt(idStr, 10);
+            if (isNaN(lastId) || isNaN(lastDate.getTime())) throw new Error();
+        } catch {
+            return res.status(400).json({ error: true, message: 'Invalid continue token' });
+        }
+    }
 
     try {
-        // Verify that the suite exists
         const suite = await models.suites.findByPk(suiteId);
         if (!suite) {
             return res.status(404).json({ error: true, message: `Suite with id ${suiteId} not found.` });
         }
 
-        let sessionList = await models.sessions.findAll({
-            where: { suiteId },
-            order: [[orderBy == 'date' ? 'date' : 'totalScore', 'DESC']],
-            limit,
-            attributes: ['name', 'commitId', 'suiteId', 'date', 'id', 'username', 'totalScore'],
+        const where = { suiteId };
+        if (continueToken && orderBy === 'date') {
+            where[models.Sequelize.Op.or] = [
+                { date: { [models.Sequelize.Op.lt]: lastDate } },
+                { 
+                    date: lastDate, 
+                    id: { [models.Sequelize.Op.lt]: lastId } 
+                }
+            ];
+        } else if (continueToken && orderBy === 'totalScore') {
+            where[models.Sequelize.Op.or] = [
+                { totalScore: { [models.Sequelize.Op.lt]: lastDate } },
+                { 
+                    totalScore: lastDate, 
+                    id: { [models.Sequelize.Op.lt]: lastId } 
+                }
+            ];
+        }
+
+        let sessions = await models.sessions.findAll({
+            where,
+            order: [[orderBy, 'DESC'], ['id', 'DESC']],
+            limit: limit + 1,
+            attributes: ['id', 'name', 'commitId', 'suiteId', 'date', 'username', 'totalScore'],
             include: [
                 {
                     model: models.suites,
@@ -122,10 +162,7 @@ handler.get(async (req, res) => {
                 {
                     model: models.scores,
                     as: 'scores',
-                    attributes: [
-                        'score',
-                        'testCaseId'
-                    ],
+                    attributes: ['score', 'testCaseId'],
                     include: [
                         {
                             model: models.testcases,
@@ -134,11 +171,18 @@ handler.get(async (req, res) => {
                         },
                     ],
                 },
-            ]
+            ],
         });
 
-        // Flatten the data
-        sessionList = sessionList.map(session => {
+        let nextToken = null;
+        if (sessions.length > limit) {
+            const last = sessions[limit - 1];
+            const compareValue = orderBy === 'date' ? last.date : last.totalScore;
+            nextToken = Buffer.from(`${compareValue.toISOString?.() || compareValue}|${last.id}`, 'utf8').toString('base64');
+            sessions.length = limit;
+        }
+
+        const result = sessions.map(session => {
             const scores = session.scores.map(score => ({
                 ...score.toJSON(),
                 testCaseName: score.testcase?.name,
@@ -147,20 +191,20 @@ handler.get(async (req, res) => {
             }));
             return {
                 ...session.toJSON(),
+                score: session.totalScore,
                 scores,
             };
         });
 
-        //Calculate the scores
-        // sessionList = sessionList.map(i => ({ ...i, score: calculateSessionScore(i) }))
-
-
-        res.status(200).json({ sessions: sessionList });
+        return res.status(200).json({
+            sessions: result,
+            continueToken: nextToken,
+        });
     } catch (error) {
         console.error('Failed to fetch suite sessions:', error);
         res.status(500).json({ error: true, message: 'Failed to fetch suite sessions' });
     }
-})
+});
 
 /**
  * @swagger

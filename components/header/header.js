@@ -2,7 +2,7 @@
 import styles from "./header.module.scss";
 import {useEffect, useState } from "react";
 
-import { FaPlay, FaUpload, FaMagnifyingGlass } from "react-icons/fa6";
+import { FaPlay, FaUpload, FaMagnifyingGlass, FaBook } from "react-icons/fa6";
 
 
 import Link from "next/link";
@@ -42,6 +42,9 @@ export default function Header({light = false, eventCount}) {
                     <h1>{SITE_NAME}</h1>
                 </Link>
                 <Nav light={light} style={{flex: 1}}>
+                    <HeaderLink text="Docs" href="/docs">
+                        <FaBook />
+                    </HeaderLink>
                     <HeaderLink text="Run">
                         <FaPlay />
                     </HeaderLink>

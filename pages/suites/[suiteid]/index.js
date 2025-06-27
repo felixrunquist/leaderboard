@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 import Head from "next/head";
 import Header from "@/c/header";
@@ -6,6 +6,10 @@ import Header from "@/c/header";
 import SessionsTable from "@/c/sessions-table";
 import { SITE_NAME } from "@/l/constants";
 import { useRouter } from "next/router";
+import SuiteStatistics from '@/c/suite-statistics';
+import LineChart from '@/c/line-chart';
+import Chart from '@/c/chart';
+import Breadcrumb from '@/c/breadcrumb';
 
 export default function Suites() {
     const router = useRouter();
@@ -16,7 +20,7 @@ export default function Suites() {
     async function fetchSuite() {
         if(window[`saved-suite-${router.query.suiteid}`]){
             console.log("Retrieved suite from window!")
-            setSessionData(window[`saved-suite-${router.query.suiteid}-sessions`])
+            setSuiteData(window[`saved-suite-${router.query.suiteid}`])
             return;
         }
         const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}`);
@@ -61,6 +65,70 @@ export default function Suites() {
         return <h1>Suite {router.query.suiteid} not found</h1>
     }
 
+    // const chartOptions = useMemo(() => {
+    //     if (!sessionData) {
+    //         return {}
+    //     }
+    //     return {
+    //         xAxis: {
+    //             type: 'time',
+    //             boundaryGap: false
+    //         },
+    //         yAxis: {
+    //             type: 'value',
+    //             name: 'Score', nameLocation: 'center',
+    //             nameTextStyle: {
+    //                 color: '#eee',
+    //                 fontWeight: 'bold',
+    //             },
+    //         },
+    //         series: [
+    //             {
+    //                 data: sessionData.map((i, k) => [i.date, i.totalScore]),
+    //                 type: 'line',
+    //                 // name: 'Export',
+    //                 smooth: false,
+    //             },
+    //         ],
+    //         tooltip: {
+    //             trigger: 'axis',
+    //             // formatter: function (params) {
+    //             //     const xAxisLabel = params[0].axisValue;
+    //             //     let tooltipText = `<strong>${fromNow(xAxisLabel)} - ${hourMinutes(xAxisLabel)}</strong><br/>`;
+    //             //     params.forEach((item) => {
+    //             //         tooltipText += `
+    //             //         <span style="display:inline-block;margin-right:5px;
+    //             //             border-radius:10px;width:9px;height:9px;
+    //             //             background-color:${item.color}"></span>
+    //             //         ${item.seriesName}: <strong>${item.data[1]}</strong><br/>
+    //             //         `;
+    //             //     });
+    //             //     return tooltipText;
+    //             // },
+    //         },
+    //         // legend: {
+    //         //     data: ['Import', 'Export'],
+    //         //     orient: 'vertical',
+    //         //     right: 10,
+    //         //     top: 'center',
+    //         //     textStyle: {
+    //         //         color: '#eee'
+    //         //     },
+    //         // },
+    //         dataZoom: [
+    //             {
+    //                 type: 'inside',
+    //                 start: 0,
+    //                 end: 100
+    //             },
+    //             {
+    //                 start: 0,
+    //                 end: 100
+    //             }
+    //         ],
+    //     }
+    // }, [sessionData]);
+
     return (<>
         <Head>
             <title>{SITE_NAME}</title>
@@ -68,7 +136,14 @@ export default function Suites() {
         </Head>
         <Header />
         <div className='container'>
+            <Breadcrumb>{[{href: '/', name: 'Home'}, {href: '/suites', name: 'Suites'}, {name: suiteData ? suiteData.name : router.query.suiteid}]}</Breadcrumb>
             <h2>Suite - {suiteData ? suiteData.name : router.query.suiteid}</h2>
+            <SuiteStatistics suiteData={suiteData} sessionData={sessionData}/>
+            <section>
+                <h3>Session scores</h3>
+                <LineChart values={sessionData?.map(i => ({name: i.name, value: i.totalScore})) || []}/>
+                {/* <Chart options={chartOptions}/> */}
+            </section>
             <SessionsTable data={sessionData} />
         </div>
     </>);

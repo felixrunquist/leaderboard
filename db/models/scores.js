@@ -59,7 +59,6 @@ export default function scores(sequelize, DataTypes) {
         };
 
         const totalScore = calculateSessionScore(enrichedSession);
-        console.log('Total score for ' + session.name, totalScore);
 
         session.totalScore = totalScore;
         await session.save({ transaction: options.transaction });
