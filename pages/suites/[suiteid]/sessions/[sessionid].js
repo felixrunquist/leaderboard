@@ -36,54 +36,63 @@ export default function Suites() {
         window[`saved-suite-${router.query.suiteid}`] = suite; // Save to avoid having to fetch it again
     }
 
-    async function fetchSessions() {
-        let sessions;
-        if (window[`saved-suite-${router.query.suiteid}-sessions`]) {
-            console.log("Retrieved session from window!")
-            sessions = window[`saved-suite-${router.query.suiteid}-sessions`];
-        } else {
-            const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}/sessions`);
-            if (res.status == 404) {
-                setNotFound(true);
-                return;
-            }
-            if (res.status != 200) {
-                return;
-            }
-            sessions = (await res.json()).sessions
-            window[`saved-suite-${router.query.suiteid}-sessions`] = sessions; // Save to avoid having to fetch it again
-        }
-
-        let session = sessions.filter(i => i.id == router.query.sessionid);
-        if (!session.length) {
+    async function fetchSession() {
+        const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}/sessions/${router.query.sessionid}`);
+        if(res.status == 404){
             setNotFound(true);
             return;
         }
-        session = session[0];
-        if (session.suiteId != router.query.suiteid) {
-            setNotFound(true);
+        if(res.status != 200){
             return;
         }
-        console.log(session)
+        setSessionData(await res.json());
+        // let sessions;
+        // if (window[`saved-suite-${router.query.suiteid}-sessions`]) {
+        //     console.log("Retrieved session from window!")
+        //     sessions = window[`saved-suite-${router.query.suiteid}-sessions`];
+        // } else {
+        //     const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}/sessions`);
+        //     if (res.status == 404) {
+        //         setNotFound(true);
+        //         return;
+        //     }
+        //     if (res.status != 200) {
+        //         return;
+        //     }
+        //     sessions = (await res.json()).sessions
+        //     window[`saved-suite-${router.query.suiteid}-sessions`] = sessions; // Save to avoid having to fetch it again
+        // }
 
-        //Calculate rank, min, max etc.
+        // let session = sessions.filter(i => i.id == router.query.sessionid);
+        // if (!session.length) {
+        //     setNotFound(true);
+        //     return;
+        // }
+        // session = session[0];
+        // if (session.suiteId != router.query.suiteid) {
+        //     setNotFound(true);
+        //     return;
+        // }
+        // console.log(session)
 
-        setSessionData({...session, 
-            rank: sessions.indexOf(session) + 1, 
-            totalSessions: sessions.length, 
-            minTotalScore: Math.min(...sessions.map(i => i.totalScore)), 
-            maxTotalScore: Math.max(...sessions.map(i => i.totalScore))
-        })
+        // //Calculate rank, min, max etc.
+
+        // setSessionData({...session, 
+        //     rank: sessions.indexOf(session) + 1, 
+        //     totalSessions: sessions.length, 
+        //     minTotalScore: Math.min(...sessions.map(i => i.totalScore)), 
+        //     maxTotalScore: Math.max(...sessions.map(i => i.totalScore))
+        // })
     }
 
     useEffect(() => {
         if (!router.isReady) return;
         fetchSuite();
-        fetchSessions();
+        fetchSession();
     }, [router.isReady])
 
     if (notFound) {
-        return <h1>Suite {router.query.suiteid} not found</h1>
+        return <h1>Session {router.query.sessionid} not found or does not have any relation to suite {router.query.suiteid}. </h1>
     }
 
     return (<>
@@ -93,14 +102,14 @@ export default function Suites() {
         </Head>
         <Header />
         <div className='container'>
-            <Breadcrumb>{[{href: '/', name: 'Home'}, {href: '/suites', name: 'Suites'}, {href: `/suites/${router.query.suiteid}`, name: suiteData ? suiteData.name : router.query.suiteid}, {name: sessionData ? sessionData.name : router.query.sessionid}]}</Breadcrumb>
-            <h2>Session - {sessionData ? sessionData.name : router.query.sessionid}</h2>
+            <Breadcrumb>{[{href: '/', name: 'Home'}, {href: '/suites', name: 'Suites'}, {href: `/suites/${router.query.suiteid}`, name: suiteData ? suiteData.name : router.query.suiteid}, {name: sessionData ? sessionData.session.name : router.query.sessionid}]}</Breadcrumb>
+            <h2>Session - {sessionData ? sessionData.session.name : router.query.sessionid}</h2>
             <SessionStatistics sessionData={sessionData} suiteData={suiteData}/>
             <section>
                 <h3>Scores for this session</h3>
-                <LineChart values={sessionData?.scores.map(i => ({name: i.testCaseName, value: i.score})) || []}/>
+                <LineChart values={sessionData?.session.scores.map(i => ({name: i.testCaseName, value: i.score})) || []}/>
             </section>
-            <ScoreTable data={sessionData?.scores}/>
+            <ScoreTable data={sessionData?.session.scores}/>
         </div>
     </>);
 }

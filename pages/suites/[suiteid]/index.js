@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 
 import Head from "next/head";
 import Header from "@/c/header";
@@ -11,12 +11,16 @@ import LineChart from '@/c/line-chart';
 import Chart from '@/c/chart';
 import Breadcrumb from '@/c/breadcrumb';
 
-export default function Suites() {
+export default function Suite() {
     const router = useRouter();
     const [suiteData, setSuiteData] = useState(null)
     const [sessionData, setSessionData] = useState(null)
     const [dateSessionData, setDateSessionData] = useState(null)
     const [notFound, setNotFound] = useState(false)
+
+    const [continueToken, setContinueToken] = useState(null)
+    const continueRef = useRef();
+    continueRef.current = continueToken;
 
     async function fetchSuite() {
         if (window[`saved-suite-${router.query.suiteid}`]) {
@@ -38,12 +42,12 @@ export default function Suites() {
     }
 
     async function fetchSessions() {
-        if (window[`saved-suite-${router.query.suiteid}-sessions`]) {
-            console.log("Retrieved session from window!")
-            setSessionData(window[`saved-suite-${router.query.suiteid}-sessions`])
-            return;
-        }
-        const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}/sessions`);
+        // if (!continueRef.current && window[`saved-suite-${router.query.suiteid}-sessions`]) {
+        //     console.log("Retrieved session from window!")
+        //     setSessionData(window[`saved-suite-${router.query.suiteid}-sessions`])
+        //     return;
+        // }
+        const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}/sessions` + (continueRef.current ? `?continueToken=${continueRef.current}` : ''));
         if (res.status == 404) {
             setNotFound(true);
             return;
@@ -51,17 +55,18 @@ export default function Suites() {
         if (res.status != 200) {
             return;
         }
-        const sessions = (await res.json()).sessions
-        setSessionData(sessions)
-        window[`saved-suite-${router.query.suiteid}-sessions`] = sessions; // Save to avoid having to fetch it again
+        const json = await res.json()
+        console.log(json)
+        const sessions = json.sessions
+        setSessionData(i => {
+            const ret = i ? [...i, ...sessions] : sessions
+            // window[`saved-suite-${router.query.suiteid}-sessions`] = sessions; // Save to avoid having to fetch it again
+            return ret;
+        })
+        setContinueToken(json.continueToken)
     }
     
     async function fetchDateSessions() {
-        // if (window[`saved-suite-${router.query.suiteid}-sessions`]) {
-        //     console.log("Retrieved session from window!")
-        //     setSessionData(window[`saved-suite-${router.query.suiteid}-sessions`])
-        //     return;
-        // }
         const res = await fetch(`/api/leaderboard/suites/${router.query.suiteid}/sessions?order=date`);
         if (res.status == 404) {
             setNotFound(true);
@@ -72,7 +77,6 @@ export default function Suites() {
         }
         const sessions = (await res.json()).sessions
         setDateSessionData(sessions)
-        // window[`saved-suite-${router.query.suiteid}-sessions`] = sessions; // Save to avoid having to fetch it again
     }
 
     useEffect(() => {
@@ -87,7 +91,7 @@ export default function Suites() {
     }
 
     const chartOptions = useMemo(() => {
-        if (!sessionData) {
+        if (!dateSessionData) {
             return {}
         }
         return {
@@ -124,9 +128,7 @@ export default function Suites() {
                 }
             ],
         }
-    }, [sessionData]);
-
-    console.log(chartOptions)
+    }, [dateSessionData]);
 
     return (<>
         <Head>
@@ -145,7 +147,14 @@ export default function Suites() {
                     <Chart options={chartOptions} />
                 </div>
             </section>
-            <SessionsTable data={sessionData} />
+            {continueToken && <div style={{marginBottom: '1rem'}}><FetchMoreData fetch={fetchSessions}/></div>}
+            <SessionsTable data={sessionData} pagingPanelElement={continueToken && <FetchMoreData fetch={fetchSessions} />}/>
         </div>
     </>);
+}
+
+function FetchMoreData({fetch}) {
+    return (
+            <button onClick={fetch || null}>Fetch more data</button>
+    );
 }

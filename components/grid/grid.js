@@ -30,10 +30,10 @@ const Grid = forwardRef(({ defaultColDef = defCol, gridOptions, pagingPanelEleme
         const [dark, setDark] = useState(props.dark || false);
 
         const containerRef = useRef();
-        const childElementCreated = useRef(false);
+        const pagingRootRef = useRef(null);
 
         useEffect(() => {
-            if (pagingPanelElement && !childElementCreated.current) {
+            if (pagingPanelElement && !pagingRootRef.current) { // Has to be created
                 const panel =
                     containerRef.current.querySelector(".ag-paging-panel");
                 if (panel == null) {
@@ -42,11 +42,15 @@ const Grid = forwardRef(({ defaultColDef = defCol, gridOptions, pagingPanelEleme
                 const rootElem = document.createElement("div");
                 rootElem.style.flex = 1;
                 panel.prepend(rootElem);
-                const root = createRoot(rootElem);
-                root.render(pagingPanelElement);
-                childElementCreated.current = true;
+                pagingRootRef.current = createRoot(rootElem);
+                pagingRootRef.current.render(pagingPanelElement);
+            }else if(!pagingPanelElement && pagingRootRef.current){ // Has to be removed
+                pagingRootRef.current.unmount();
+                pagingRootRef.current = null;
+            }else if(pagingRootRef.current){ // Has to be updated
+                pagingRootRef.current.render(pagingPanelElement)
             }
-        });
+        }, [pagingPanelElement]);
 
         return (
             <div

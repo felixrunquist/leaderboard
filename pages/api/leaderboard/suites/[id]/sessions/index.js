@@ -68,7 +68,7 @@ const handler = createHandler();
  *                         format: date-time
  *                       commitId:
  *                         type: string
- *                       score:
+ *                       totalScore:
  *                         type: number
  *                       suite:
  *                         type: object
@@ -98,7 +98,7 @@ const handler = createHandler();
  */
 
 //Get sessions of a particular suite
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 100;
 
 handler.get(async (req, res) => {
     const suiteId = req.query.id;
@@ -114,10 +114,17 @@ handler.get(async (req, res) => {
     if (continueToken) {
         try {
             const decoded = Buffer.from(continueToken, 'base64').toString('utf8');
-            const [dateStr, idStr] = decoded.split('|');
-            lastDate = new Date(dateStr);
+            const [valueStr, idStr] = decoded.split('|');
             lastId = parseInt(idStr, 10);
-            if (isNaN(lastId) || isNaN(lastDate.getTime())) throw new Error();
+            if (isNaN(lastId)) throw new Error();
+
+            if (orderBy === 'date') {
+                lastDate = new Date(valueStr);
+                if (isNaN(lastDate.getTime())) throw new Error();
+            } else {
+                lastDate = parseFloat(valueStr);
+                if (isNaN(lastDate)) throw new Error();
+            }
         } catch {
             return res.status(400).json({ error: true, message: 'Invalid continue token' });
         }
@@ -133,17 +140,17 @@ handler.get(async (req, res) => {
         if (continueToken && orderBy === 'date') {
             where[models.Sequelize.Op.or] = [
                 { date: { [models.Sequelize.Op.lt]: lastDate } },
-                { 
-                    date: lastDate, 
-                    id: { [models.Sequelize.Op.lt]: lastId } 
+                {
+                    date: lastDate,
+                    id: { [models.Sequelize.Op.lt]: lastId }
                 }
             ];
         } else if (continueToken && orderBy === 'totalScore') {
             where[models.Sequelize.Op.or] = [
                 { totalScore: { [models.Sequelize.Op.lt]: lastDate } },
-                { 
-                    totalScore: lastDate, 
-                    id: { [models.Sequelize.Op.lt]: lastId } 
+                {
+                    totalScore: lastDate,
+                    id: { [models.Sequelize.Op.lt]: lastId }
                 }
             ];
         }
@@ -178,7 +185,7 @@ handler.get(async (req, res) => {
         if (sessions.length > limit) {
             const last = sessions[limit - 1];
             const compareValue = orderBy === 'date' ? last.date : last.totalScore;
-            nextToken = Buffer.from(`${compareValue.toISOString?.() || compareValue}|${last.id}`, 'utf8').toString('base64');
+            nextToken = Buffer.from(`${compareValue?.toISOString?.() || compareValue}|${last.id}`, 'utf8').toString('base64');
             sessions.length = limit;
         }
 
@@ -191,7 +198,6 @@ handler.get(async (req, res) => {
             }));
             return {
                 ...session.toJSON(),
-                score: session.totalScore,
                 scores,
             };
         });
@@ -394,8 +400,8 @@ handler.post(async (req, res) => {
             return res.status(404).json({ error: true, message: `Suite with id ${suiteId} not found.` });
         }
 
-        if(!suite.users.map(i => i.username).includes(username) && !admin){
-            return res.status(403).json({ error: true, message: `To add sessions to the suite ${suite.name} you must be an owner of it or an admin user. `});
+        if (!suite.users.map(i => i.username).includes(username) && !admin) {
+            return res.status(403).json({ error: true, message: `To add sessions to the suite ${suite.name} you must be an owner of it or an admin user. ` });
         }
 
         // Extract valid testCase IDs that belong to the suite

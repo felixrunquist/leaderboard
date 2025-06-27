@@ -1,11 +1,13 @@
 import styles from './sessions-table.module.scss';
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 
 import Grid from '@/c/grid';
 import { fromNow } from '@/l/helper';
 import Link from 'next/link';
 
-export default function SessionsTable({data, ...props }) {
+export default function SessionsTable({ data, pagingPanelElement, ...props }) {
+    const gridRef = useRef();
+
     const columns = useMemo(() => [
         {
             headerName: 'Rank',
@@ -32,9 +34,16 @@ export default function SessionsTable({data, ...props }) {
         }
     ], [data])
 
+    useEffect(() => {
+        if (gridRef.current.api) {
+            gridRef.current.api.paginationGoToNextPage();
+        }
+    }, [data]);
+
     return (
         <section style={{ flex: 1, display: "flex", minHeight: "50rem", padding: 0, clipPath: 'inset(0px round .5rem)', }}>
             <Grid
+                ref={gridRef}
                 sticky
                 rowData={data}
                 columnDefs={columns}
@@ -42,6 +51,7 @@ export default function SessionsTable({data, ...props }) {
                 paginationPageSize={100}
                 paginationPageSizeSelector={[10, 25, 50, 100]}
                 dark
+                pagingPanelElement={pagingPanelElement}
                 loading={data === null}
             />
         </section>

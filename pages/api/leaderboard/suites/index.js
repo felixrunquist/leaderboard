@@ -80,6 +80,7 @@ handler.get(async (req, res) => {
         try {
             const decoded = Buffer.from(continueToken, 'base64').toString('utf8');
             [lastUpdated, lastId] = decoded.split('|');
+            lastUpdated = new Date(lastUpdated);
             lastId = parseInt(lastId, 10);
             if (isNaN(lastId) || !lastUpdated) throw new Error();
         } catch {
@@ -118,7 +119,7 @@ handler.get(async (req, res) => {
         let nextToken = null;
         if (results.length > PAGE_SIZE) {
             const lastSuite = results[PAGE_SIZE - 1];
-            nextToken = Buffer.from(`${lastSuite.updated}|${lastSuite.id}`, 'utf8').toString('base64');
+            nextToken = Buffer.from(`${lastSuite.updated.toISOString()}|${lastSuite.id}`, 'utf8').toString('base64');
             results.length = PAGE_SIZE;
         }
 

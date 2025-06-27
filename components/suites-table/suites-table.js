@@ -6,21 +6,36 @@ import Link from 'next/link';
 
 export default function SuitesTable({...props}){
     const [suites, setSuites] = useState(null);
-    const continueToken = useRef();
+    const [continueToken, setContinueToken] = useState(null)
+    const continueRef = useRef();
+    const gridRef = useRef();
 
-    async function fetchSessions(){
-        const res = await fetch('/api/leaderboard/suites');
+    continueRef.current = continueToken;
+
+    async function fetchSuites(){
+        if(suites && !continueRef.current){
+            return;
+        }
+        const res = await fetch('/api/leaderboard/suites' + (continueRef.current ? `?continueToken=${continueRef.current}` : ''));
         if(res.status != 200){
             return;
         }
         const json = await res.json();
-        setSuites(json.suites);
-        continueToken.current = json.continueToken;
+        console.log(json, continueRef.current, json.continueToken)
+        setSuites(i => i ? [...i, ...json.suites] : json.suites);
+        setContinueToken(json.continueToken);
+        continueRef.current = json.continueToken;
     }
 
     useEffect(() => {
-        fetchSessions();
+        if(!suites) fetchSuites();
     }, [])
+
+    useEffect(() => {
+        if (gridRef.current.api) {
+            gridRef.current.api.paginationGoToNextPage();
+        }
+    }, [suites]);
 
     const columns = useMemo(() => [
         {
@@ -41,9 +56,19 @@ export default function SuitesTable({...props}){
         }
     ], []);
 
+    // async function fetchMore(){
+    //     const res = await fetch('/api/leaderboard/suites');
+    //     if(res.status != 200){
+    //         return;
+    //     }
+    //     const json = await res.json();
+    //     setSuites(json.suites);
+    // }
+
     return (
         <section style={{flex: 1, display: "flex", minHeight: "50rem", padding: 0, clipPath: 'inset(0px round .5rem)', }}>
             <Grid
+                ref={gridRef}
                 sticky
                 rowData={suites}
                 columnDefs={columns}
@@ -51,8 +76,15 @@ export default function SuitesTable({...props}){
                 paginationPageSize={100}
                 paginationPageSizeSelector={[10, 25, 50, 100]}
                 dark
+                pagingPanelElement={continueToken && <FetchMoreData fetch={fetchSuites} />}
                 loading={suites === null}
             />
         </section>
     )
+}
+
+function FetchMoreData({fetch}) {
+    return (
+            <button onClick={fetch || null}>Fetch more data</button>
+    );
 }
