@@ -181,6 +181,69 @@ Apply this middleware to secure routes by configuring the `matcher` field in `mi
 ```
 
 ---
+## Database diagram
+
+This Mermaid code provides a diagram of the database architecture. 
+
+```mermaid
+erDiagram
+    Suites ||--o{ Sessions : has
+    Suites ||--o{ Users_Suites : "has users"
+    Testcases ||--o{ Scores : tested_in
+    Testcases ||--o{ Testcases_Suites : "belongs to many"
+    Suites ||--o{ Testcases_Suites : "has many"
+    Users ||--o{ Users_Suites : "belongs to many"
+    Sessions ||--o{ Scores : includes
+    Users ||--o{ Sessions : "owns"
+
+    Suites {
+        int id PK
+        string name
+        string rankAlgorithm
+        date created
+        date updated
+    }
+
+    Testcases {
+        int id PK
+        string name
+        string runCommand
+        float weight
+    }
+
+    Users {
+        int id PK
+        string name
+        string username
+        string email
+    }
+
+    Sessions {
+        int id PK
+        int suiteId FK
+        string username FK
+        date date
+        string commitId
+        float totalScore
+    }
+
+    Scores {
+        int sessionId FK
+        int testCaseId FK
+        float score
+    }
+
+    Users_Suites {
+        int userId FK
+        int suiteId FK
+    }
+
+    Testcases_Suites {
+        int testCaseId FK
+        int suiteId FK
+    }
+```
+---
 
 ## 🧪 Testing (Optional Setup)
 
